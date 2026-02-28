@@ -1,0 +1,48 @@
+# Byte-compiled / optimized
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Distribution
+dist/
+build/
+*.egg-info/
+
+# Data files
+*.duckdb
+*.duckdb.wal
+
+# Models (generated, not checked in)
+models/*.pkl
+models/*.joblib
+
+# Docker
+.dockerignore
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Env files
+.env
+.env.local
+
+# Test cache
+.pytest_cache/
+
+# Agent / IDE metadata
+.gemini/
+
+# Logs
+*.log

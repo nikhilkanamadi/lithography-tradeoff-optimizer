@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LTO — Lithography Tradeoff Optimizer</title>
+    <meta name="description"
+        content="Tradeoff observability platform for computational lithography — predict, monitor, and optimize semiconductor manufacturing.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@200;300;400;500;600;700;800;900&display=swap"
+        rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+    <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+
+    <!-- ============ GLASSMORPHIC NAV BAR ============ -->
+    <nav class="nav-bar" id="nav-bar">
+        <div class="nav-logo">
+            <span class="nav-logo-mark">LTO</span>
+        </div>
+        <div class="nav-links">
+            <button class="nav-link active" data-section="hero" id="nl-hero">Overview</button>
+            <button class="nav-link" data-section="predict" id="nl-predict">Predict</button>
+            <button class="nav-link" data-section="jobs" id="nl-jobs">Submit Job</button>
+            <button class="nav-link" data-section="alerts" id="nl-alerts">Alerts</button>
+            <button class="nav-link" data-section="health" id="nl-health">Health</button>
+        </div>
+        <div class="nav-right">
+            <div class="nav-status" id="nav-api-status">
+                <span class="status-dot live"></span>
+                <span>Demo Mode</span>
+            </div>
+            <a class="nav-cta" href="https://github.com/nikhilkanamadi/lithography-tradeoff-optimizer"
+                target="_blank">GitHub ↗</a>
+        </div>
+    </nav>
+
+    <!-- ============ SECTION 1 — HERO ============ -->
+    <section class="section hero-section" id="section-hero" style="background-image: url('images/hero-bg.png')">
+        <div class="hero-overlay"></div>
+        <div class="hero-content">
+            <h1 class="hero-title">
+                Precision Tradeoffs<br>
+                <span class="hero-highlight">for Lithography.</span>
+            </h1>
+            <p class="hero-sub">
+                LTO observes, predicts, and optimizes the critical tradeoffs in
+                semiconductor manufacturing — powered by an ensemble of XGBoost, MLP, and
+                Gaussian Process models.
+            </p>
+            <div class="hero-cta-row">
+                <button class="btn-hero" onclick="scrollToSection('predict')">
+                    <span>Explore Predictions</span>
+                    <span class="btn-arrow">→</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Floating stat cards -->
+        <div class="hero-stats">
+            <div class="stat-card glass-card" id="stat-health">
+                <div class="stat-value">65</div>
+                <div class="stat-label">System Health</div>
+            </div>
+            <div class="stat-card glass-card" id="stat-risk">
+                <div class="stat-value">0.201</div>
+                <div class="stat-label">Yield Risk</div>
+            </div>
+            <div class="stat-card glass-card" id="stat-reliability">
+                <div class="stat-value">0.989</div>
+                <div class="stat-label">Surrogate Reliability</div>
+            </div>
+            <div class="stat-card glass-card" id="stat-model">
+                <div class="stat-value">v0.2</div>
+                <div class="stat-label">Ensemble (XGB+MLP+GP)</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ============ SECTION 2 — TRADEOFF OVERVIEW ============ -->
+    <section class="section overview-section" id="section-overview"
+        style="background-image: url('images/optics-bg.png')">
+        <div class="section-overlay"></div>
+        <div class="section-inner">
+            <h2 class="section-title">Tradeoff Intelligence</h2>
+            <p class="section-subtitle">
+                Five critical dimensions, continuously monitored with calibrated confidence intervals.
+            </p>
+
+            <div class="overview-grid">
+                <div class="overview-chart glass-card">
+                    <h3 class="card-title">⚖️ Tradeoff Radar</h3>
+                    <div class="chart-wrap"><canvas id="radar-chart"></canvas></div>
+                </div>
+                <div class="overview-chart glass-card">
+                    <h3 class="card-title">📈 Signal Strengths</h3>
+                    <div class="chart-wrap"><canvas id="bar-chart"></canvas></div>
+                </div>
+            </div>
+
+            <div class="signal-cards" id="signal-cards"></div>
+        </div>
+    </section>
+
+    <!-- ============ SECTION 3 — PREDICT ============ -->
+    <section class="section predict-section" id="section-predict" style="background-image: url('images/wafer-bg.png')">
+        <div class="section-overlay"></div>
+        <div class="section-inner">
+            <h2 class="section-title">Tradeoff Predictor</h2>
+            <p class="section-subtitle">
+                Adjust lithography parameters and see how the tradeoff landscape responds in real time.
+            </p>
+
+            <div class="predict-grid">
+                <div class="predict-controls glass-card">
+                    <h3 class="card-title">🔬 Lithography Parameters</h3>
+                    <div class="controls-form">
+                        <div class="ctrl-group">
+                            <label>Numerical Aperture (NA)</label>
+                            <input type="range" id="p-na" min="0.10" max="0.55" step="0.01" value="0.33">
+                            <span class="ctrl-val" id="p-na-val">0.33</span>
+                        </div>
+                        <div class="ctrl-group">
+                            <label>Wavelength (nm)</label>
+                            <select id="p-wavelength">
+                                <option value="13.5" selected>13.5 nm — EUV</option>
+                                <option value="193.0">193 nm — ArF DUV</option>
+                                <option value="248.0">248 nm — KrF DUV</option>
+                            </select>
+                        </div>
+                        <div class="ctrl-group">
+                            <label>Dose (mJ/cm²)</label>
+                            <input type="range" id="p-dose" min="1" max="50" step="0.5" value="15">
+                            <span class="ctrl-val" id="p-dose-val">15.0</span>
+                        </div>
+                        <div class="ctrl-group">
+                            <label>Partial Coherence (σ)</label>
+                            <input type="range" id="p-sigma" min="0.1" max="1.0" step="0.05" value="0.8">
+                            <span class="ctrl-val" id="p-sigma-val">0.80</span>
+                        </div>
+                        <div class="ctrl-group">
+                            <label>Resist Thickness (nm)</label>
+                            <input type="range" id="p-resist" min="5" max="100" step="1" value="30">
+                            <span class="ctrl-val" id="p-resist-val">30</span>
+                        </div>
+                        <div class="ctrl-group">
+                            <label>Grid Size (nm)</label>
+                            <select id="p-grid">
+                                <option value="0.5">0.5 nm</option>
+                                <option value="1.0" selected>1.0 nm</option>
+                                <option value="2.0">2.0 nm</option>
+                                <option value="5.0">5.0 nm</option>
+                            </select>
+                        </div>
+                        <div class="ctrl-group ctrl-check">
+                            <label><input type="checkbox" id="p-surrogate" checked> Use AI Surrogate</label>
+                        </div>
+                    </div>
+                    <button class="btn-predict" id="btn-predict" onclick="runPrediction()">
+                        Predict Tradeoffs <span class="btn-arrow">→</span>
+                    </button>
+                </div>
+
+                <div class="predict-results glass-card" id="predict-results">
+                    <div class="results-empty" id="results-empty">
+                        <div class="empty-icon">🎯</div>
+                        <p>Adjust parameters and click <strong>Predict</strong><br>to see ensemble tradeoff analysis</p>
+                    </div>
+                    <div class="results-live hidden" id="results-live">
+                        <div class="result-badges" id="result-badges"></div>
+                        <div class="result-grid" id="result-grid"></div>
+                        <div class="result-chart-wrap"><canvas id="predict-radar"></canvas></div>
+                        <div class="result-info" id="result-info"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ============ SECTION 4 — SUBMIT JOB ============ -->
+    <section class="section jobs-section" id="section-jobs" style="background-image: url('images/hero-bg.png')">
+        <div class="section-overlay"></div>
+        <div class="section-inner">
+            <h2 class="section-title">Submit Simulation</h2>
+            <p class="section-subtitle">
+                Run the full pipeline — ML preflight, physics simulation, evaluation, and alert checks.
+            </p>
+
+            <div class="predict-grid">
+                <div class="predict-controls glass-card">
+                    <h3 class="card-title">⚙️ Job Parameters</h3>
+                    <div class="controls-form">
+                        <div class="ctrl-group">
+                            <label>Numerical Aperture (NA)</label>
+                            <input type="range" id="j-na" min="0.10" max="0.55" step="0.01" value="0.33">
+                            <span class="ctrl-val" id="j-na-val">0.33</span>
+                        </div>
+                        <div class="ctrl-group">
+                            <label>Wavelength (nm)</label>
+                            <select id="j-wavelength">
+                                <option value="13.5" selected>13.5 nm — EUV</option>
+                                <option value="193.0">193 nm — ArF DUV</option>
+                                <option value="248.0">248 nm — KrF DUV</option>
+                            </select>
+                        </div>
+                        <div class="ctrl-group">
+                            <label>Dose (mJ/cm²)</label>
+                            <input type="range" id="j-dose" min="1" max="50" step="0.5" value="15">
+                            <span class="ctrl-val" id="j-dose-val">15.0</span>
+                        </div>
+                        <div class="ctrl-group">
+                            <label>Pattern Complexity</label>
+                            <select id="j-complexity">
+                                <option value="simple">Simple</option>
+                                <option value="moderate" selected>Moderate</option>
+                                <option value="complex">Complex</option>
+                                <option value="extreme">Extreme</option>
+                            </select>
+                        </div>
+                        <div class="ctrl-group ctrl-check">
+                            <label><input type="checkbox" id="j-surrogate" checked> Use AI Surrogate</label>
+                        </div>
+                    </div>
+                    <button class="btn-predict" id="btn-submit" onclick="submitJob()">
+                        Submit Job <span class="btn-arrow">→</span>
+                    </button>
+                </div>
+
+                <div class="predict-results glass-card" id="job-results">
+                    <div class="results-empty" id="job-empty">
+                        <div class="empty-icon">⚙️</div>
+                        <p>Submit a job to run the full<br>simulation &amp; evaluation pipeline</p>
+                    </div>
+                    <div class="results-live hidden" id="job-live">
+                        <div id="job-header-info"></div>
+                        <div id="job-output-grid"></div>
+                        <div id="job-signal-grid"></div>
+                        <div id="job-ml-info"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ============ SECTION 5 — ALERTS ============ -->
+    <section class="section alerts-section" id="section-alerts" style="background-image: url('images/optics-bg.png')">
+        <div class="section-overlay darker"></div>
+        <div class="section-inner">
+            <h2 class="section-title">Alert Engine</h2>
+            <p class="section-subtitle">
+                Six configurable rules monitor every simulation — from yield risk spikes to surrogate drift.
+            </p>
+
+            <div class="alerts-grid">
+                <div class="alert-card glass-card">
+                    <span class="alert-badge critical">CRITICAL</span>
+                    <h4>High Yield Risk</h4>
+                    <p>yield_risk > 0.8 — immediate threat to wafer yield</p>
+                    <span class="alert-cooldown">60s cooldown</span>
+                </div>
+                <div class="alert-card glass-card">
+                    <span class="alert-badge emergency">EMERGENCY</span>
+                    <h4>Extreme Yield Risk</h4>
+                    <p>yield_risk > 0.95 — requires production halt</p>
+                    <span class="alert-cooldown">10s cooldown</span>
+                </div>
+                <div class="alert-card glass-card">
+                    <span class="alert-badge warn">WARN</span>
+                    <h4>Low Overall Health</h4>
+                    <p>overall_health < 0.4 — multiple dimensions degraded</p>
+                            <span class="alert-cooldown">120s cooldown</span>
+                </div>
+                <div class="alert-card glass-card">
+                    <span class="alert-badge warn">WARN</span>
+                    <h4>Surrogate Drift</h4>
+                    <p>surrogate_reliability < 0.90 with AI surrogate on</p>
+                            <span class="alert-cooldown">300s cooldown</span>
+                </div>
+                <div class="alert-card glass-card">
+                    <span class="alert-badge info">INFO</span>
+                    <h4>Slow Compute</h4>
+                    <p>Simulation time exceeds 60 seconds</p>
+                    <span class="alert-cooldown">600s cooldown</span>
+                </div>
+                <div class="alert-card glass-card">
+                    <span class="alert-badge warn">WARN</span>
+                    <h4>Resolution vs DoF</h4>
+                    <p>resolution_vs_dof < 0.3 — core tradeoff imbalanced</p>
+                            <span class="alert-cooldown">180s cooldown</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ============ SECTION 6 — HEALTH ============ -->
+    <section class="section health-section" id="section-health" style="background-image: url('images/wafer-bg.png')">
+        <div class="section-overlay darker"></div>
+        <div class="section-inner">
+            <h2 class="section-title">System Health</h2>
+            <p class="section-subtitle">Live status of all LTO components.</p>
+
+            <div class="health-grid" id="health-grid"></div>
+
+            <div class="perf-stats">
+                <div class="perf-stat glass-card">
+                    <div class="perf-value">32</div>
+                    <div class="perf-label">Tests Passing</div>
+                </div>
+                <div class="perf-stat glass-card">
+                    <div class="perf-value">3</div>
+                    <div class="perf-label">ML Models in Ensemble</div>
+                </div>
+                <div class="perf-stat glass-card">
+                    <div class="perf-value">5</div>
+                    <div class="perf-label">Tradeoff Dimensions</div>
+                </div>
+                <div class="perf-stat glass-card">
+                    <div class="perf-value">6</div>
+                    <div class="perf-label">Alert Rules Active</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ============ FOOTER ============ -->
+    <footer class="footer">
+        <div class="footer-inner">
+            <div class="footer-brand">
+                <span class="footer-logo">LTO</span>
+                <span class="footer-tagline">Lithography Tradeoff Optimizer · v0.2 Ensemble</span>
+            </div>
+            <div class="footer-links">
+                <a href="https://github.com/nikhilkanamadi/lithography-tradeoff-optimizer" target="_blank">GitHub</a>
+                <span class="footer-sep">·</span>
+                <span>Open Source</span>
+            </div>
+        </div>
+    </footer>
+
+    <script src="app.js"></script>
+</body>
+
+</html>
